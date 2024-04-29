@@ -22,7 +22,9 @@ rm -rf HTR_SDMs
 mkdir -p logs
 
 bash train_eval_predict.sb Full
+wait
 bash train_eval_predict.sb LatLon "_latlon"
+wait
 
 ###
 

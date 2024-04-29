@@ -4,10 +4,10 @@ module --force purge
 module load singularity/3.8.1
 
 base=`pwd`
-cd "$2"/C"$1"
+export cont="$base"/spt_sdm.sif
 
+cd "$2"/C"$1"
 dir=`pwd`
-export cont="$dir"/spt_sdm.sif
 
 mkdir -p $dir/1_Inputs/2_Predictors/{1_Current/Hist_RCM,2_Projection/RCP85}
 
