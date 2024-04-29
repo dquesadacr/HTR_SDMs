@@ -4,13 +4,7 @@ module --force purge
 module load singularity/3.8.1
 
 base=`pwd`
-repo="HTR_SDMs"
-mkdir -p "$2"/C"$1" && cd "$_"
-
-git clone https://github.com/dquesadacr/"$repo".git
-mv "$repo"/{*,.*} ./
-mv ./0_Code/{*,.*} ./
-rmdir "$repo"/ 0_Code/
+cd "$2"/C"$1"
 
 dir=`pwd`
 export cont="$dir"/spt_sdm.sif

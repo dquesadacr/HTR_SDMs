@@ -4,6 +4,17 @@ dirname=$1
 
 # for i in 1 2 3 4; do # different predictors in the sets, set to 1 (all variables) after testing
 for i in 1; do
+        base=`pwd`
+        repo="HTR_SDMs"
+        mkdir -p "$dirname"/C"$i" && cd "$_"
+
+        git clone https://github.com/dquesadacr/"$repo".git
+        mv "$repo"/{*,.*} ./
+        mv ./0_Code/{*,.*} ./
+        rmdir "$repo"/ 0_Code/
+
+        cd $base
+
         sbatch -c 6 --time=6:00:00 --mem=11G -J colinvar_C"$i" -o logs/colinvar_C"$i"_%j.out -e logs/colinvar_C"$i"_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END ./run_colinvar.sh $i $dirname "$2"
 done
 
