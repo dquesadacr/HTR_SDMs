@@ -33,7 +33,7 @@ source("aux_proj.R")
 # ARGUMENTS TO PARSE =======
 preds <- c(cmdArg("p"), cmdArg("preds"), cmdArg("predictors")) # "biovars" # read as BV (bv, biovars) also, and indexes or ind
 
-plot_bool <- ifelse(is.null(c(cmdArg("plot"), cmdArg("pl"))), FALSE, TRUE)
+plot_bool <- c(cmdArg("plot"), cmdArg("pl"))
 Spec_ID <- c(cmdArg("id"), cmdArg("s"), cmdArg("species"), cmdArg("ID")) #"centaurea" #
 # trimObs2H <- as.logical(c(cmdArg("trimobs"), cmdArg("trim"), cmdArg("TO"))) # trim observations only in during historical period
 
@@ -79,8 +79,8 @@ sapply(c("Hist_RCM", "RCP85"), function(expmt){
     names(preds_list) <- names(preds_list) %>% str_split_i("/", -1) %>% str_remove_all(paste0(".rds"))
 
     # PREDICT ====
-    pred_all <- ens_predict(ens_list, preds_list, plot = plot_bool, 
-                            expmt_fold = expmt_fold, preds = preds,
-                            fileid=preds) %>% unwrap_lists()
+    pred_all <- ens_predict(sp_ID = Spec4folders, ens_list, preds_list,
+                            plot = plot_bool, expmt_fold = expmt_fold,
+                            preds = preds, fileid = preds) %>% unwrap_lists()
   }
 })

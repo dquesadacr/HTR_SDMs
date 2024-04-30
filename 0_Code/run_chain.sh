@@ -8,6 +8,6 @@ cont=$2
 id=$3
 folds=$4
 
-echo singularity exec -C -B $dir:/Data $cont bash -c "cd /Data; bash full_chain'$5'.sh $id $folds false"
+echo singularity exec -C -B $dir:/Data $cont bash -c "cd /Data; bash full_chain'$5'.sh $id $folds FALSE"
 
-singularity exec -C -B $dir:/Data $cont bash -c "cd /Data; bash full_chain'$5'.sh $id $folds false" #true for plotting
+singularity exec -C -B $dir:/Data $cont bash -c "cd /Data; bash full_chain'$5'.sh $id $folds FALSE" #TRUE for plotting

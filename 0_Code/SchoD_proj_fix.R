@@ -33,7 +33,7 @@ library(flexsdm)
 source("mods.R")
 source("aux_proj.R")
 
-Spec_ID <- c(cmdArg("id"), cmdArg("s"), cmdArg("species"), cmdArg("ID")) #"centaurea" #
+Spec_ID <- c(cmdArg("id"), cmdArg("s"), cmdArg("species"), cmdArg("ID"))
 
 uniq_sp <- read_sf("./1_Inputs/1_Occurrences/subset_repro.gpkg") %>%
   .$Art_wiss %>% unique
@@ -44,14 +44,6 @@ Spec4folders <- str_replace(Spec_ID, " ", "_")
 
 dictio_replace <- c("_orig" = "", "_reproj" = "-R", "H2000" = "H2k", "run10"="R10")
 dictio_replace_preds <- c("worldclim" = "WC", "ind" = "MI", "both"="B&I", "biovars"="BV")
-
-contPixels2vec <- function(x){
-  if (is.list(x)) {x <- sapply(x, contPixels2vec, simplify = FALSE)
-  } else if (!is.null(x)) {
-    as.data.frame(x$meanw) %>%
-      drop_na()
-  }
-}
 
 pred_all <- sapply(list.files(paste0("./2_Outputs/1_Current/Ensemble/meanw/1_con/", Spec4folders),
                               pattern = "*.rds$",  full.names = TRUE),
@@ -93,7 +85,6 @@ niche_metrics <- sapply(names(mss_hist), simplify = FALSE, function(z){
   })
 })
 gc()
-
 
 saveRDS(mss_predictions, paste0("./2_Outputs/0_Model_performance/Ensemble/meanw/",
                                 Spec4folders, "/mss_predictions.rds"))

@@ -41,14 +41,6 @@ Spec4folders_all <- str_replace(uniq_sp, " ", "_")
 dictio_replace <- c("_orig" = "", "_reproj" = "-R", "H2000" = "H2k", "run10"="R10")
 dictio_replace_preds <- c("worldclim" = "WC", "ind" = "MI", "both"="B&I", "biovars"="BV")
 
-contPixels2vec <- function(x){
-  if (is.list(x)) {x <- sapply(x, contPixels2vec, simplify = FALSE)
-  } else if (!is.null(x)) {
-    as.data.frame(x$meanw) %>%
-      drop_na()
-  }
-}
-
 cont_niche_df <- list.files(pattern = "niche_metrics_cont.rds", recursive = TRUE) %>%
   str_subset("mascula", negate = TRUE) %>%
   sapply(., simplify = FALSE, FUN=function(x){
@@ -166,7 +158,7 @@ pred_df <- sapply(names(pred_fin) %>% str_subset("Dianthu", negate = TRUE),
   return(niche_fin_cont)
 }) %>% bind_rows
 
-pred_df <- pred_df %>% 
+pred_df <- pred_df %>%
   mutate(TrainThinDist = fct_relabel(TrainThinDist, ~ gsub("N/A", "0 km", .x)),
          TrainThinTemp = if_else(TrainThinDist == "0 km", 
                                  if_else(TrainThinTemp=="N/A", 

@@ -42,7 +42,7 @@ setwd(Dir.Base)
 
 project_directory <- sdm_directory(
   main_dir = Dir.Base,
-  projections = c("RCP85", "RCP26"),
+  projections = c("RCP85"),
   calibration_area = TRUE,
   algorithm = c("all"),
   ensemble = c("meanw"),

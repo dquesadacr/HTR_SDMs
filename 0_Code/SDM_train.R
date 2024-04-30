@@ -91,7 +91,6 @@ print(obs_name)
 
 # DIRECTORIES ==================================================================
 Dir.Base <- getwd()
-setwd(Dir.Base)
 
 project_directory <- sdm_directory(
   main_dir = Dir.Base,

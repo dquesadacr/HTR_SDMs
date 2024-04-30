@@ -38,7 +38,7 @@ str2clean <- paste0("_32.nc.rds.xz|_32.rds.xz|evaluation_|ECMWF-|ICTP-|MPI-M-|NC
 expmts <- c("Hist_RCM", "RCP85")
 
 sapply(expmts, function(expmt){
-  print(expmt)  
+  print(expmt)
   ifelse(expmt == "Hist_RCM", 
          {expmt_fold <- "1_Current/Hist_RCM"; seq_years <- seq(1965,2005,10); suffix <- "H2000"; run_max <- 30}, 
          {expmt_fold <- paste0("2_Projection/", expmt); seq_years <- seq(2020,2100,10); suffix <- "P20"; run_max <- 20})
