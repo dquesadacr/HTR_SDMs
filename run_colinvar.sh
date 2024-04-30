@@ -15,9 +15,6 @@ cp $base/preds/Past/* $dir/1_Inputs/2_Predictors/1_Current/
 cp $base/preds/Hist/* $dir/1_Inputs/2_Predictors/1_Current/Hist_RCM/
 cp $base/preds/RCP85/* $dir/1_Inputs/2_Predictors/2_Projection/RCP85/
 
-# echo singularity exec -C -B $dir:/Data $cont bash -c "cd /Data; bash sing_colinvar.sh $1"
-# singularity exec -C -B $dir:/Data $cont bash -c "cd /Data; bash sing_colinvar.sh $1"
-
 echo singularity exec -C -B $dir:/Data $cont bash -c "cd /Data;
 Rscript colinvar_all.R -f "$1" ; wait
 Rscript select_vars_SD.R &
