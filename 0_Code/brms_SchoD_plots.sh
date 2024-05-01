@@ -1,3 +1,4 @@
+#!/bin/sh
 
 # echo singularity exec -C -B ./:/Data/ -B /beegfs/ws/1/s9941460-SDM/tmp/:/tmp/ /beegfs/ws/1/s9941460-SDM/sdm.sif3 bash -c "cd /Data; Rscript $2"
 cd $1
