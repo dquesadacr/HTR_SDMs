@@ -16,7 +16,7 @@ Rscript brms_TempTrans_plot.R
 Rscript brms_R10_plot.R
 
 for i in alpina montana caryo poa pseudo scabi dianthus meum ranun ; do
-    Rscript SchoD_proj_fix.R -id $i
+    Rscript SchoD_proj_fix.R -id "'$i'"
 done
 
 Rscript final_proj_plots_filt.R

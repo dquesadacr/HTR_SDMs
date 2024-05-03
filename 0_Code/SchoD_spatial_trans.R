@@ -71,7 +71,8 @@ r10_df <- niche_filt %>%
   filter(TrainApproach == "R10",
          TrainThinTemp == "0Y" & TrainThinDist == "1 km" |
          TrainThinTemp == "5Y" & TrainThinDist == "1 km" |
-         TrainThinTemp == "0Y" & TrainThinDist == "2 km")
+         TrainThinTemp == "0Y" & TrainThinDist == "2 km" |
+         TrainThinTemp == "5Y" & TrainThinDist == "2 km" )
 
 niche_fin <- bind_rows(h2k_df, r10_df)
 
@@ -79,8 +80,8 @@ niche_plot1 <- ggplot(niche_fin,
                       aes(x=Species,
                           y=value, color=Species)) +
   geom_boxplot(outlier.size = 0.5) +
-  scale_color_manual(values = c("#7d5690", "#34acf8", "#5abe43", "#fbb637", "#C42503",
-                                "#C1C1C1", "#1929C8", "#55ff7f", "#ffaaff", "#4e5a64", "#8F0000" ),
+  scale_color_manual(values = c("#7d5690", "#34acf8", "#6acc68", "#f7b036", "#ef9fef",
+                                "#758796", "#1929C8", "#C42503", "#3f822e", "#C1C1C1", "#8F0000"),
                      name="") +
   facet_nested("Predict"+PredsPeriod~TrainApproach+TrainThinDist+TrainThinTemp,
                scales = "free_x", space = "free_x",
@@ -159,7 +160,8 @@ pred_df <- sapply(names(pred_fin) %>% str_subset("Dianthu", negate = TRUE),
 }) %>% bind_rows
 
 pred_df <- pred_df %>%
-  mutate(TrainThinDist = fct_relabel(TrainThinDist, ~ gsub("N/A", "0 km", .x)),
+  mutate(TrainPredictors = str_replace_all(TrainPredictors, "WC", "WC-R"),
+         TrainThinDist = fct_relabel(TrainThinDist, ~ gsub("N/A", "0 km", .x)),
          TrainThinTemp = if_else(TrainThinDist == "0 km", 
                                  if_else(TrainThinTemp=="N/A", 
                                          fct_relabel(TrainThinTemp, ~ gsub("N/A", "", .x)),
@@ -200,8 +202,8 @@ niche_plot2 <- ggplot(pred_df,
   )
 
 
-ggsave(plot= niche_plot2, filename=paste0("./spat_trans.pdf"),
-       width=180, height=60, units="mm")
+# ggsave(plot= niche_plot2, filename=paste0("./2_Outputs/0_Model_performance/Ensemble/meanw/", "spat_trans.pdf"),
+#        width=180, height=60, units="mm")
 
 ####
 
@@ -222,5 +224,5 @@ p1_tot <- ggarrange(plotlist = list(
                     heights = c(2, 1.175),
                     font.label = list(size=9, face="plain"))
 
-ggsave(plot= p1_tot, filename=paste0("./SPT_trans.pdf"),
+ggsave(plot= p1_tot, filename=paste0("./2_Outputs/0_Model_performance/Ensemble/meanw/", "SPT_trans.pdf"),
        width=180, height=100, units="mm")

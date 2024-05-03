@@ -27,10 +27,8 @@ wait
 bash train_eval_predict.sb LatLon "_latlon"
 wait
 
-###
-
-sbatch --nodes=1 -c 16 --mem=58GB --qos=medium -J brms_SchoD -o ./logs/brms_SchoD_%j.out -e ./logs/brms_SchoD_%j.err --mail-user dannell.quesada@tu-dresden.de --mail-type END brms_SchoD_plots.sh "Full/C1_F10" "$cont"
+# When run_chain.sh jobs have been all submitted:
 
 afterok=$(squeue --format="%i" -u $USER | tail -n +2 | xargs | tr " " ":")
 
-sbatch --nodes=1 -c 16 --mem=58GB --qos=medium --dependency=afterok:"$afterok" -J brms_SchoD -o ./logs/brms_SchoD_%j.out -e ./logs/brms_SchoD_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END brms_SchoD_plots.sh "Full/C1_F10" "$cont"
+sbatch --nodes=1 -c 8 --mem=29GB --qos=medium --dependency=afterok:"$afterok" -J brms_SchoD -o ./logs/brms_SchoD_%j.out -e ./logs/brms_SchoD_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END brms_SchoD_plots.sh "Full/C1_F10" "$cont"
