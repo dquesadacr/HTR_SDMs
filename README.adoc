@@ -1,0 +1,63 @@
+= HTR_SDMs
+:icons: font
+:my_name: Dánnell Quesada-Chacón
+:source-highlighter: pygments
+:pygments-linenums-mode: inline
+
+This repository contains the source code necessary to reproduce the results of the manuscript "Integrating High-Temporal-Resolution Climate Projections into Species Distribution Models", to be submitted.
+
+== Other resources needed
+
+The following external resources are publicly available to fully reproduce the results:
+
+* The `spt_sdm.sif` singularity container https://doi.org/10.5281/zenodo.8352758[image:https://zenodo.org/badge/DOI/10.5281/zenodo.8352758.svg[DOI]]
+** This container holds all the necessary software and packages to run the code within this repository
+* The `preds.zip` preprocessed predictors file https://doi.org/10.5281/zenodo.8404563[image:https://zenodo.org/badge/DOI/10.5281/zenodo.8404563.svg[DOI]]
+
+Note that the presented code was run from an HPC environment with SLURM, yet it is possible to adapt to make it run locally.
+
+== Setting everything up and reproducing the results
+
+From the root folder of the project:
+
+. We download the container and the predictors (and unzip them):
+[source, bash]
+----
+wget https://zenodo.org/records/8352758/files/spt_sdm.sif?download=1 -O spt_sdm.sif
+
+wget https://zenodo.org/records/8404563/files/predictors.zip?download=1 -O preds.zip
+unzip preds.zip
+rm preds.zip
+----
+
+. We clone this repository, keeping only the necessary files within this folder, and create a `logs` folder:
+[source, bash]
+----
+git clone --depth 1 https://github.com/dquesadacr/HTR_SDMs.git
+
+cp HTR_SDMs/train_eval_predict.sh ./
+cp HTR_SDMs/run_colinvar.sh ./
+cp HTR_SDMs/0_Code/brms_SchoD_plots.sh ./
+
+rm -rf HTR_SDMs
+mkdir -p logs
+----
+
+. We submit the jobs to train the SDMs for both the Full version and the spatiotemporal transferability test:
+[source, bash]
+----
+bash train_eval_predict.sh Full
+wait
+bash train_eval_predict.sh LatLon "_latlon"
+wait
+----
+
+. When all the `run_chain.sh` jobs inside the loops of both `train_eval_predict.sh` have been submitted, the postprocessing and plotting jobs are submitted:
+[source, bash]
+----
+afterok=$(squeue --format="%i" -u $USER | tail -n +2 | xargs | tr " " ":") # can include unrelated jobs
+
+sbatch --nodes=1 -c 8 --mem=29GB --qos=medium --dependency=afterok:"$afterok" -J brms_SchoD -o ./logs/brms_SchoD_%j.out -e ./logs/brms_SchoD_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END brms_SchoD_plots.sh "Full/C1_F10" "$cont"
+----
+
+* Note: The `submit_pipeline.sh` script contains these commands.

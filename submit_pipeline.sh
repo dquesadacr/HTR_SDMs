@@ -15,20 +15,20 @@ rm preds.zip
 export repo="HTR_SDMs"
 git clone --depth 1 https://github.com/dquesadacr/"$repo".git
 
-cp HTR_SDMs/train_eval_predict.sb ./
+cp HTR_SDMs/train_eval_predict.sh ./
 cp HTR_SDMs/run_colinvar.sh ./
 cp HTR_SDMs/0_Code/brms_SchoD_plots.sh ./
 
 rm -rf HTR_SDMs
 mkdir -p logs
 
-bash train_eval_predict.sb Full
+bash train_eval_predict.sh Full
 wait
-bash train_eval_predict.sb LatLon "_latlon"
+bash train_eval_predict.sh LatLon "_latlon"
 wait
 
-# When run_chain.sh jobs have been all submitted:
+# When all the run_chain.sh jobs inside the loops of both train_eval_predict.sh have been submitted:
 
-afterok=$(squeue --format="%i" -u $USER | tail -n +2 | xargs | tr " " ":")
+afterok=$(squeue --format="%i" -u $USER | tail -n +2 | xargs | tr " " ":") # can include unrelated jobs
 
 sbatch --nodes=1 -c 8 --mem=29GB --qos=medium --dependency=afterok:"$afterok" -J brms_SchoD -o ./logs/brms_SchoD_%j.out -e ./logs/brms_SchoD_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END brms_SchoD_plots.sh "Full/C1_F10" "$cont"
