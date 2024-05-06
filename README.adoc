@@ -63,4 +63,11 @@ afterok=$(squeue --format="%i" -u $USER | tail -n +2 | xargs | tr " " ":") # can
 sbatch --nodes=1 -c 8 --mem=29GB --qos=medium --dependency=afterok:"$afterok" -J brms_SchoD -o ./logs/brms_SchoD_%j.out -e ./logs/brms_SchoD_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END brms_SchoD_plots.sh "Full/C1_F10" "$cont"
 ----
 
-NOTE: The `submit_pipeline.sh` script contains these commands.
+[NOTE]
+====
+The `submit_pipeline.sh` script contains these commands.
+====
+
+== Citation
+
+The bibliography to cite when using either this repository, the _singularity_ container or the preprocessed predictors will be added in due time.
