@@ -1,6 +1,11 @@
 = HTR_SDMs
-:icons: font
-:my_name: Dánnell Quesada-Chacón
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 :source-highlighter: coderay
 
 This repository contains the source code necessary to reproduce the results of the manuscript "Integrating High-Temporal-Resolution Climate Projections into Species Distribution Models", to be submitted.
@@ -58,9 +63,13 @@ wait
 +
 [source,shell]
 ----
-afterok=$(squeue --format="%i" -u $USER | tail -n +2 | xargs | tr " " ":") # can include unrelated jobs
+# The following can include unrelated jobs
+afterok=$(squeue --format="%i" -u $USER | tail -n +2 | xargs | tr " " ":")
 
-sbatch --nodes=1 -c 8 --mem=29GB --qos=medium --dependency=afterok:"$afterok" -J brms_SchoD -o ./logs/brms_SchoD_%j.out -e ./logs/brms_SchoD_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END brms_SchoD_plots.sh "Full/C1_F10" "$cont"
+sbatch --nodes=1 -c 8 --mem=29GB --qos=medium \
+    --dependency=afterok:"$afterok" -J brms_SchoD \
+    -o ./logs/brms_SchoD_%j.out -e ./logs/brms_SchoD_%j.err \
+    --mail-user dannell.quesada@pik-potsdam.de --mail-type END \ brms_SchoD_plots.sh "Full/C1_F10" "$cont"
 ----
 
 [NOTE]
