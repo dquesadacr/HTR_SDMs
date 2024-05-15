@@ -107,7 +107,7 @@ plot_ls1 <- lapply(1:length(unique(plot_df1$metric)), FUN = function(y){
                          limits = unlist(lims_both[y,-1]), oob = scales::squish,
                          option = opts[y], name = "", breaks = scales::breaks_pretty(n=3)) +
     theme_light() +
-    facet_nested(.~metric, scales = "free", space="free") +
+    facet_nested(""~metric, scales = "free", space="free") +
     guides(fill="none")+
     theme(
       legend.key.width= unit(6,"mm"),
