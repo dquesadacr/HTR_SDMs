@@ -15,9 +15,9 @@ for i in 1; do
 
         cd $base
         #  --mem=11G
-        echo sbatch -c 12 --qos=short --time=6:00:00 -J colinvar_C"$i"_"$dirname" -o logs/colinvar_C"$i"_"$dirname"_%j.out -e logs/colinvar_C"$i"_"$dirname"_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END ./run_colinvar.sh $i $dirname "$2" $cont
+        echo sbatch -c 12 --qos=short --time=6:00:00 -J colinvar_C"$i"_"$dirname" -o logs/colinvar_C"$i"_"$dirname"_%j.out -e logs/colinvar_C"$i"_"$dirname"_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END ./run_colinvar.sh $i $dirname $cont "$2"
 
-        sbatch -c 12 --qos=short --time=6:00:00 -J colinvar_C"$i"_"$dirname" -o logs/colinvar_C"$i"_"$dirname"_%j.out -e logs/colinvar_C"$i"_"$dirname"_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END ./run_colinvar.sh $i $dirname "$2" $cont
+        sbatch -c 12 --qos=short --time=6:00:00 -J colinvar_C"$i"_"$dirname" -o logs/colinvar_C"$i"_"$dirname"_%j.out -e logs/colinvar_C"$i"_"$dirname"_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END ./run_colinvar.sh $i $dirname $cont "$2"
 done
 
 # case $1 in

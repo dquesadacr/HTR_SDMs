@@ -7,6 +7,7 @@ cont="$base"/$3
 
 cd "$2"/C"$1"
 dir=`pwd`
+full_chain_suffix="$4"
 
 mkdir -p $dir/1_Inputs/2_Predictors/{1_Current/Hist_RCM,2_Projection/RCP85}
 
@@ -31,7 +32,7 @@ for j in 10; do
     cp -a $dir $dir2
     cd $dir2
     for k in alpina montana caryo poa pseudo scabi dianthus meum ranun; do
-        echo sbatch -c 16 --qos=medium --mem=58G -J "$k"_C"$1"_F"$j"_"$2" -o $base/logs/"$k"_C"$1"_F"$j"_"$2"_%j.out -e $base/logs/"$k"_C"$1"_F"$j"_"$2"_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END $dir2/run_chain.sh $dir2 $cont $k $j "$3"
-        sbatch -c 16 --qos=medium --mem=58G -J "$k"_C"$1"_F"$j"_"$2" -o $base/logs/"$k"_C"$1"_F"$j"_"$2"_%j.out -e $base/logs/"$k"_C"$1"_F"$j"_"$2"_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END $dir2/run_chain.sh $dir2 $cont $k $j "$3"
+        echo sbatch -c 16 --qos=medium --mem=58G -J "$k"_C"$1"_F"$j"_"$2" -o $base/logs/"$k"_C"$1"_F"$j"_"$2"_%j.out -e $base/logs/"$k"_C"$1"_F"$j"_"$2"_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END $dir2/run_chain.sh $dir2 $cont $k $j "$full_chain_suffix"
+        sbatch -c 16 --qos=medium --mem=58G -J "$k"_C"$1"_F"$j"_"$2" -o $base/logs/"$k"_C"$1"_F"$j"_"$2"_%j.out -e $base/logs/"$k"_C"$1"_F"$j"_"$2"_%j.err --mail-user dannell.quesada@pik-potsdam.de --mail-type END $dir2/run_chain.sh $dir2 $cont $k $j "$full_chain_suffix"
     done
 done
