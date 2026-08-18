@@ -1,10 +1,9 @@
 #!/bin/sh
 
 module --force purge
-module load singularity/3.8.1
 
 base=`pwd`
-export cont="$base"/spt_sdm.sif
+cont="$base"/$3
 
 cd "$2"/C"$1"
 dir=`pwd`

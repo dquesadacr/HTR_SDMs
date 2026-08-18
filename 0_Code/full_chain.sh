@@ -1,165 +1,115 @@
 
-# Bioclimatic &
-Rscript SDM_train.R -f "$2" -a dec -p biovars -id "$1" &
-Rscript SDM_train.R -f "$2" -a dec -p biovars -id "$1" -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a dec -p biovars -id "$1" -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a dec -p biovars -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a dec -p biovars -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a dec -p biovars -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a dec -p biovars -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
+#!/usr/bin/env bash
+# ============================================================
+# full_chain.sh — Train, predict, and evaluate SDM models
+#
+# Usage: ./full_chain.sh <spec_id> <folds> <plot>
+#   spec_id  : species identifier (string)
+#   folds    : number of cross-validation folds (integer)
+#   plot     : enable plotting (TRUE/FALSE)
+# ============================================================
 
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 1 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 5 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 10 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 100
+spec_id="$1"
+folds="$2"
+plot="$3"
+
+# ============================================================
+# Training phase — loops over: section → algo → thinning config
+# ============================================================
+
+# --- Bioclimatic, Indexes, Mix (biovars / ind / both) ---
+for p in biovars ind both; do
+  # Algorithms that apply to all three sections
+  for a in dec run10 H2000; do
+    # Base call (no thinning)
+    Rscript SDM_train.R -f "$folds" -a "$a" -p "$p" -id "$spec_id" &
+
+    # Spatial thinning
+    for sp_thr in 1000 2000; do
+      Rscript SDM_train.R -f "$folds" -a "$a" -p "$p" -id "$spec_id" \
+        -ThinAlg sp -spat_thr "$sp_thr" &
+    done
+
+    # Spatial + temporal thinning — temp_thr depends on algorithm
+    if [ "$a" = "dec" ]; then
+      temps=(0 100)
+    elif [ "$a" = "run10" ]; then
+      temps=(0 1 5 10 100)
+    else   # H2000
+      temps=(100)
+    fi
+    for sp_thr in 1000 2000; do
+      for t in "${temps[@]}"; do
+        Rscript SDM_train.R -f "$folds" -a "$a" -p "$p" -id "$spec_id" \
+          -ThinAlg spt -spat_thr "$sp_thr" -temp_thr "$t" &
+      done
+    done
+  done
+  wait
+
+  # H2000 with -trim flag (separate block)
+  for a in H2000; do
+    Rscript SDM_train.R -f "$folds" -a "$a" -p "$p" -id "$spec_id" -trim &
+    for sp_thr in 1000 2000; do
+      Rscript SDM_train.R -f "$folds" -a "$a" -p "$p" -id "$spec_id" \
+        -trim -ThinAlg sp -spat_thr "$sp_thr" &
+      Rscript SDM_train.R -f "$folds" -a "$a" -p "$p" -id "$spec_id" \
+        -trim -ThinAlg spt -spat_thr "$sp_thr" -temp_thr 100 &
+    done
+  done
+  wait
+done
+
+# --- Worldclim (only H2000, with -wc orig/reproj) ---
+for wc in orig reproj; do
+  Rscript SDM_train.R -f "$folds" -a H2000 -p worldclim -id "$spec_id" \
+    -wc "$wc" &
+  for sp_thr in 1000 2000; do
+    Rscript SDM_train.R -f "$folds" -a H2000 -p worldclim -id "$spec_id" \
+      -wc "$wc" -ThinAlg sp -spat_thr "$sp_thr" &
+    Rscript SDM_train.R -f "$folds" -a H2000 -p worldclim -id "$spec_id" \
+      -wc "$wc" -ThinAlg spt -spat_thr "$sp_thr" -temp_thr 100 &
+  done
+
+  # -trim variant
+  Rscript SDM_train.R -f "$folds" -a H2000 -p worldclim -id "$spec_id" \
+    -wc "$wc" -trim &
+  for sp_thr in 1000 2000; do
+    Rscript SDM_train.R -f "$folds" -a H2000 -p worldclim -id "$spec_id" \
+      -wc "$wc" -trim -ThinAlg sp -spat_thr "$sp_thr" &
+    Rscript SDM_train.R -f "$folds" -a H2000 -p worldclim -id "$spec_id" \
+      -wc "$wc" -trim -ThinAlg spt -spat_thr "$sp_thr" -temp_thr 100 &
+  done
+  wait
+done
 wait
 
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 1 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 5 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 10 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a H2000 -p biovars -id "$1" &
-Rscript SDM_train.R -f "$2" -a H2000 -p biovars -id "$1" -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p biovars -id "$1" -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p biovars -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a H2000 -p biovars -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a H2000 -p biovars -id "$1" -trim &
-Rscript SDM_train.R -f "$2" -a H2000 -p biovars -id "$1" -trim -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p biovars -id "$1" -trim -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p biovars -id "$1" -trim -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a H2000 -p biovars -id "$1" -trim -ThinAlg spt -spat_thr 2000 -temp_thr 100
-wait
-
-# Indexes &
-Rscript SDM_train.R -f "$2" -a dec -p ind -id "$1" &
-Rscript SDM_train.R -f "$2" -a dec -p ind -id "$1" -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a dec -p ind -id "$1" -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a dec -p ind -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a dec -p ind -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a dec -p ind -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a dec -p ind -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 1 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 5 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 10 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 100
-wait
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 1 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 5 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 10 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a H2000 -p ind -id "$1" &
-Rscript SDM_train.R -f "$2" -a H2000 -p ind -id "$1" -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p ind -id "$1" -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p ind -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a H2000 -p ind -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a H2000 -p ind -id "$1" -trim &
-Rscript SDM_train.R -f "$2" -a H2000 -p ind -id "$1" -trim -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p ind -id "$1" -trim -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p ind -id "$1" -trim -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a H2000 -p ind -id "$1" -trim -ThinAlg spt -spat_thr 2000 -temp_thr 100
-wait
-
-# Mix &
-Rscript SDM_train.R -f "$2" -a dec -p both -id "$1" &
-Rscript SDM_train.R -f "$2" -a dec -p both -id "$1" -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a dec -p both -id "$1" -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a dec -p both -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a dec -p both -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a dec -p both -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a dec -p both -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 1 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 5 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 10 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 100
-wait
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 0 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 1 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 5 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 10 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a H2000 -p both -id "$1" &
-Rscript SDM_train.R -f "$2" -a H2000 -p both -id "$1" -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p both -id "$1" -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p both -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a H2000 -p both -id "$1" -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a H2000 -p both -id "$1" -trim &
-Rscript SDM_train.R -f "$2" -a H2000 -p both -id "$1" -trim -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p both -id "$1" -trim -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p both -id "$1" -trim -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a H2000 -p both -id "$1" -trim -ThinAlg spt -spat_thr 2000 -temp_thr 100
-wait
-
-# Worldclim &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc orig &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc orig -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc orig -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc orig -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc orig -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc orig -trim &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc orig -trim -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc orig -trim -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc orig -trim -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc orig -trim -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -ThinAlg spt -spat_thr 2000 -temp_thr 100 &
-
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -trim &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -trim -ThinAlg sp -spat_thr 1000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -trim -ThinAlg sp -spat_thr 2000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -trim -ThinAlg spt -spat_thr 1000 -temp_thr 100 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -trim -ThinAlg spt -spat_thr 2000 -temp_thr 100
-wait
-
+# ============================================================
 # Plot thinning results
-Rscript thin_plot.R -id "$1" &
+# ============================================================
+Rscript thin_plot.R -id "$spec_id" &
 
-# Predict
-Rscript SDM_predict-eval.R -p both -id "$1" -pl "$3" &
-Rscript SDM_predict-eval.R -p ind -id "$1" -pl "$3" &
-Rscript SDM_predict-eval.R -p biovars -id "$1" -pl "$3" &
-Rscript SDM_predict-eval.R -p worldclim -id "$1" -pl "$3" &
+# ============================================================
+# Predict phase
+# ============================================================
+for p in both ind biovars worldclim; do
+  Rscript SDM_predict-eval.R -p "$p" -id "$spec_id" -pl "$plot" &
+done
 
-# wait
-
-# Project
-Rscript SDM_project_WC.R -id "$1" -pl "$3" &
-Rscript SDM_project_SD.R -p ind -id "$1" -pl "$3" &
-Rscript SDM_project_SD.R -p both -id "$1" -pl "$3" &
-Rscript SDM_project_SD.R -p biovars -id "$1" -pl "$3"
+# ============================================================
+# Project phase
+# ============================================================
+Rscript SDM_project_WC.R -id "$spec_id" -pl "$plot" &
+for p in ind both biovars; do
+  Rscript SDM_project_SD.R -p "$p" -id "$spec_id" -pl "$plot" &
+done
 
 wait
 
+# ============================================================
 # Results plots
-
-Rscript eval_plot.R -id "$1" &
-
+# ============================================================
+Rscript eval_plot.R -id "$spec_id" &
 wait
 echo
 

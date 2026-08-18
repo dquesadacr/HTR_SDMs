@@ -28,6 +28,7 @@ library(flexsdm)
 
 ## Load modified functions from flexsdm
 source("mods.R")
+source("spt_thin.R")
 
 # ARGUMENTS TO PARSE =======
 

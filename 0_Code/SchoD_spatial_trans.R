@@ -33,6 +33,24 @@ library(flexsdm)
 source("mods.R")
 source("aux_proj.R")
 
+
+manual_colors = c(
+                  "#7d5690", 
+                  "#6acc68", 
+                  "#e39547", 
+                  "#34acf8", 
+                  "#C42503",
+                  "#758796", 
+                  "#3f822e", 
+                  "#1929C8", 
+                  "#ef9fef", 
+                  "#C1C1C1", 
+                  "#8F0000"
+                  )
+
+# c("#7d5690", "#34acf8", "#6acc68", "#f7b036", "#ef9fef",
+#   #                               "#758796", "#1929C8", "#C42503", "#3f822e", "#C1C1C1", "#8F0000")
+
 uniq_sp <- read_sf("./1_Inputs/1_Occurrences/subset_repro.gpkg") %>%
   .$Art_wiss %>% unique %>% sort %>% str_subset("rchis", negate=TRUE)
 
@@ -80,8 +98,7 @@ niche_plot1 <- ggplot(niche_fin,
                       aes(x=Species,
                           y=value, color=Species)) +
   geom_boxplot(outlier.size = 0.5) +
-  scale_color_manual(values = c("#7d5690", "#34acf8", "#6acc68", "#f7b036", "#ef9fef",
-                                "#758796", "#1929C8", "#C42503", "#3f822e", "#C1C1C1", "#8F0000"),
+  scale_color_manual(values = manual_colors,
                      name="") +
   facet_nested("Predict"+PredsPeriod~TrainApproach+TrainThinDist+TrainThinTemp,
                scales = "free_x", space = "free_x",
@@ -175,8 +192,7 @@ niche_plot2 <- ggplot(pred_df,
                       aes(x=Species,
                           y=value, color=Species)) +
   geom_boxplot(outlier.size = 0.25, size=0.4) +
-  scale_color_manual(values = c("#7d5690", "#34acf8", "#6acc68", "#f7b036", "#ef9fef",
-                                "#758796", "#1929C8", "#C42503", "#3f822e", "#C1C1C1", "#8F0000"),
+  scale_color_manual(values = manual_colors,
                      breaks = uniq_sp %>% str_replace_all(" ", "\n"),
                      name="") +
   scale_x_discrete(drop=FALSE) +

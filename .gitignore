@@ -43,3 +43,5 @@ Data/*
 2_Outputs/1_Current/Algorithm/gau/0_models/fit.rds
 2_Outputs/1_Current/Ensemble/meanw/0_models/fit.rds.old
 2_Outputs/1_Current/Ensemble/meansup/0_models/fit.rds
+
+*.bak

@@ -36,6 +36,20 @@ uniq_sp <- read_sf("./1_Inputs/1_Occurrences/subset_repro.gpkg") %>%
 source("mods.R")
 source("aux_proj.R")
 
+manual_colors = c(
+                  "#7d5690", 
+                  "#6acc68", 
+                  "#e39547", 
+                  "#34acf8", 
+                  "#C42503",
+                  "#758796", 
+                  "#3f822e", 
+                  "#1929C8", 
+                  "#ef9fef", 
+                  "#C1C1C1", 
+                  "#8F0000"
+                  )
+
 # case <- c(cmdArg("c"), cmdArg("case"))
 #
 # setwd(paste0("/home/dqc/Documents/PhD/papers/GCB/iters8/C",case, "_F10/"))
@@ -126,10 +140,9 @@ plot_pixels <- ggplot(mss_summ,
                scales = "free_x", space = "free_x",
                nest_line = element_line(color="black", linewidth = .25)) +
   theme_light(base_size = 10) +
-  scale_color_manual(values = c("#7d5690", "#34acf8", "#6acc68", "#f7b036", "#ef9fef",
-                                "#758796", "#1929C8", "#C42503", "#3f822e", "#C1C1C1", "#8F0000"),
-                     name="") +
   guides(color=guide_legend(nrow=2,byrow=TRUE, override.aes = list(linewidth=0.75))) +
+  scale_color_manual(values = manual_colors,
+                     name="") +
   theme(
     axis.title.x=element_blank(),
     axis.title.y=element_blank(),

@@ -1,33 +1,63 @@
 
-##
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 0 -trimlon 4615000 -trimlat 5625000 &
-Rscript SDM_train.R -f "$2" -a run10 -p biovars -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 5 -trimlon 4615000 -trimlat 5625000 &
+#!/usr/bin/env bash
+# ============================================================
+# full_chain_latlon.sh — Lat/lon-trimmed SDM training, predict, evaluate
+#
+# Usage: ./full_chain_latlon.sh <spec_id> <folds> <plot>
+#   spec_id  : species identifier (string)
+#   folds    : number of cross-validation folds (integer)
+#   plot     : enable plotting (TRUE/FALSE)
+# ============================================================
 
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 0 -trimlon 4615000 -trimlat 5625000 &
-Rscript SDM_train.R -f "$2" -a run10 -p ind -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 5 -trimlon 4615000 -trimlat 5625000 &
+spec_id="$1"
+folds="$2"
+plot="$3"
 
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 0 -trimlon 4615000 -trimlat 5625000 &
-Rscript SDM_train.R -f "$2" -a run10 -p both -id "$1" -ThinAlg spt -spat_thr 1000 -temp_thr 5 -trimlon 4615000 -trimlat 5625000 &
+TRIMLON=4615000
+TRIMLAT=5625000
+spat_thr=1000
 
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -ThinAlg sp -spat_thr 1000 -trimlon 4615000 -trimlat 5625000 &
-Rscript SDM_train.R -f "$2" -a H2000 -p worldclim -id "$1" -wc reproj -trim -ThinAlg sp -spat_thr 1000 -trimlon 4615000 -trimlat 5625000 &
+# ============================================================
+# Training phase
+# ============================================================
+
+# run10 + spt + spat_thr 1000 + temp_thr 0/5 for biovars, ind, both
+for p in biovars ind both; do
+  for t in 0 5; do
+    Rscript SDM_train.R -f "$folds" -a run10 -p "$p" -id "$spec_id" \
+      -ThinAlg spt -spat_thr "$spat_thr" -temp_thr "$t" \
+      -trimlon "$TRIMLON" -trimlat "$TRIMLAT" &
+  done
+done
+
+# H2000 + worldclim + reproj + sp + spat_thr 1000
+Rscript SDM_train.R -f "$folds" -a H2000 -p worldclim -id "$spec_id" \
+  -wc reproj -ThinAlg sp -spat_thr "$spat_thr" \
+  -trimlon "$TRIMLON" -trimlat "$TRIMLAT" &
+
+# H2000 + worldclim + reproj + trim + sp + spat_thr 1000
+Rscript SDM_train.R -f "$folds" -a H2000 -p worldclim -id "$spec_id" \
+  -wc reproj -trim -ThinAlg sp -spat_thr "$spat_thr" \
+  -trimlon "$TRIMLON" -trimlat "$TRIMLAT" &
 
 wait
 
-# Predict
-Rscript SDM_predict-eval.R -p both -id "$1" -pl "$3" &
-Rscript SDM_predict-eval.R -p ind -id "$1" -pl "$3" &
-Rscript SDM_predict-eval.R -p biovars -id "$1" -pl "$3" &
-Rscript SDM_predict-eval.R -p worldclim -id "$1" -pl "$3"
-
+# ============================================================
+# Predict phase
+# ============================================================
+for p in both ind biovars worldclim; do
+  Rscript SDM_predict-eval.R -p "$p" -id "$spec_id" -pl "$plot" &
+done
 wait
 
-# Project
-Rscript SDM_project_WC.R -id "$1" -pl "$3" &
-Rscript SDM_project_SD.R -p ind -id "$1" -pl "$3" &
-Rscript SDM_project_SD.R -p both -id "$1" -pl "$3" &
-Rscript SDM_project_SD.R -p biovars -id "$1" -pl "$3"
-
+# ============================================================
+# Project phase
+# ============================================================
+Rscript SDM_project_WC.R -id "$spec_id" -pl "$plot" &
+for p in ind both biovars; do
+  Rscript SDM_project_SD.R -p "$p" -id "$spec_id" -pl "$plot" &
+done
 wait
+
 echo
 

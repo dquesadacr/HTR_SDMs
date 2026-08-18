@@ -1,7 +1,6 @@
 #!/bin/sh
 
 module --force purge
-module load singularity/3.8.1
 
 wget https://zenodo.org/records/8352758/files/spt_sdm.sif?download=1 -O spt_sdm.sif
 

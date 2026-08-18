@@ -1,7 +1,6 @@
 #!/bin/sh
 
 module --force purge
-module load singularity/3.8.1
 
 dir=$1
 cont=$2
