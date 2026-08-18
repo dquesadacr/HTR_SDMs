@@ -3,7 +3,7 @@
 module --force purge
 
 base=`pwd`
-cont="$base"/$3
+cont=$3
 
 cd "$2"/C"$1"
 dir=`pwd`
