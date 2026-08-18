@@ -6,7 +6,7 @@ This repository contains the source code necessary to reproduce the results of t
 
 The following external resources are publicly available to fully reproduce the results:
 
-- The `spt_sdm.sif` singularity container ([DOI](https://doi.org/10.5281/zenodo.8352758))
+- The `spt_sdm.sif` apptainer container ([DOI](https://doi.org/10.5281/zenodo.8352758))
   - This container holds all the necessary software and packages to run the code within this repository
 - The `preds.zip` preprocessed predictors file ([DOI](https://doi.org/10.5281/zenodo.8404563))
 
@@ -66,4 +66,4 @@ From the root folder of the project:
 
 ## Citation
 
-The bibliography to cite when using either this repository, the _singularity_ container or the preprocessed predictors will be added in due time.
+The bibliography to cite when using either this repository, the _apptainer_ container or the preprocessed predictors will be added in due time.

@@ -7,6 +7,6 @@ cont=$2
 id=$3
 folds=$4
 
-echo singularity exec -C -B $dir:/Data $cont bash -c "cd /Data; bash full_chain'$5'.sh $id $folds FALSE"
+echo apptainer exec -B /p -B /home --pwd "$(pwd)" $cont bash -c "bash full_chain'$5'.sh $id $folds FALSE"
 
-singularity exec -C -B $dir:/Data $cont bash -c "cd /Data; bash full_chain'$5'.sh $id $folds FALSE" #TRUE for plotting
+apptainer exec -B /p -B /home --pwd "$(pwd)" $cont bash -c "bash full_chain'$5'.sh $id $folds FALSE" #TRUE for plotting

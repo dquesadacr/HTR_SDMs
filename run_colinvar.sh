@@ -14,13 +14,11 @@ cp $base/preds/Past/* $dir/1_Inputs/2_Predictors/1_Current/
 cp $base/preds/Hist/* $dir/1_Inputs/2_Predictors/1_Current/Hist_RCM/
 cp $base/preds/RCP85/* $dir/1_Inputs/2_Predictors/2_Projection/RCP85/
 
-echo singularity exec -C -B $dir:/Data $cont bash -c "cd /Data;
-Rscript colinvar_all.R -f "$1" ; wait
+echo apptainer exec -B /p -B /home --pwd "$(pwd)" $cont bash -c "Rscript colinvar_all.R -f "$1" ; wait
 Rscript select_vars_SD.R &
 Rscript select_vars_WC_CMIP6.R; wait"
 
-singularity exec -C -B $dir:/Data $cont bash -c "cd /Data;
-Rscript colinvar_all.R -f "$1" ; wait
+apptainer exec -B /p -B /home --pwd "$(pwd)" $cont bash -c "Rscript colinvar_all.R -f "$1" ; wait
 Rscript select_vars_SD.R &
 Rscript select_vars_WC_CMIP6.R; wait"
 

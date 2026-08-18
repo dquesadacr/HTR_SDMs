@@ -2,8 +2,7 @@
 
 cd $1
 mkdir -p /p/tmp/"$USER"/sdm_tmp
-singularity exec -C -B /p:/p -B `pwd`:`pwd` -B /p/tmp/"$USER"/sdm_tmp:/tmp $2 bash -c "cd `pwd`;
-
+apptainer exec -B /p -B /home --pwd "$(pwd)" $cont bash -c "
 Rscript Sorensen_df_ind.R
 
 Rscript brms_all_plot.R
