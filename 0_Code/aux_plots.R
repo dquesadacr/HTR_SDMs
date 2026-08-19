@@ -23,6 +23,11 @@ prettyZero <- function(l){
     # max.decimals = max(nchar(str_extract(l, "\\.[0-9]+")), na.rm = T)-1
     lnew = formatC(l, replace.zero = T, zero.print = "0",
         digits = max.decimals, format = "f", preserve.width=T)
+    
+    # Replace the leading hyphen '-' with the Unicode minus '−' (\u2212)
+    # The pattern "^-" ensures we only replace the minus sign at the start of the string
+    lnew <- gsub("^-", "\u2010", lnew)
+
     return(lnew)
 }
 

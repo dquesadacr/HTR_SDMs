@@ -189,8 +189,6 @@ p_H2k_tt <- ggplot(data = H2k_plot_df2,
 fname_H2k1 <- "H2k_PREDH2k_preds.RData"
 if(file.exists(file.path(Dir.Outputs, fname_H2k1))){
   load(file.path(Dir.Outputs, fname_H2k1))
-  # The loaded object from original script is named 'TrimThin_brms', assign to our variable
-  H2k_brms_preds <- TrimThin_brms
 }else{
   H2k_brms_preds <- brm(SORENSEN ~ Subset + 
                           PREDICTORS + 
@@ -205,8 +203,6 @@ if(file.exists(file.path(Dir.Outputs, fname_H2k1))){
 fname_H2k2 <- "H2k_PREDH2k_tt.RData"
 if(file.exists(file.path(Dir.Outputs, fname_H2k2))){
   load(file.path(Dir.Outputs, fname_H2k2))
-  # The loaded object from original script is named 'TrimThin_brms', assign to our variable
-  H2k_brms_tt <- TrimThin_brms
 }else{
   H2k_brms_tt <- brm(SORENSEN ~ Train_TRIM +
                        Train_THIN * Train_TD +
@@ -283,8 +279,6 @@ TempTrans_df_fix <- TempTrans_df %>%
 fname_TempTrans <- "TempTrans_brms.RData"
 if(file.exists(file = file.path(Dir.Outputs, fname_TempTrans))){
   load(file = file.path(Dir.Outputs, fname_TempTrans))
-  # The loaded object from original script is named 'TempTrans_brms', assign to our variable
-  TempTrans_brms <- TempTrans_brms
 }else{
   TempTrans_brms <- brm(SORENSEN ~ PREDICTORS +
                           Pred_TW * Train_TW +
@@ -381,8 +375,6 @@ p_ThTr <- ggplot(
 fname_ThTr <- "TrimThin_brms.RData"
 if(file.exists(file.path(Dir.Outputs, fname_ThTr))){
   load(file.path(Dir.Outputs, fname_ThTr))
-  # The loaded object from original script is named 'TrimThin2_brms', assign to our variable
-  TrimThin2_brms <- TrimThin2_brms
 }else{
   TrimThin2_brms <- brm(SORENSEN ~ PREDICTORS + Pred_TW + 
                           Pred_TD * Pred_TT + 
@@ -393,7 +385,6 @@ if(file.exists(file.path(Dir.Outputs, fname_ThTr))){
                         chains = 6, cores = 6, thin = 2, iter = 7e3)
   save(TrimThin2_brms, file = file.path(Dir.Outputs, fname_ThTr))
 }
-
 
 # R10 figure
 
@@ -416,7 +407,6 @@ r10_plot_df <- r10_df %>%
   mutate(Pred_TD = fct_relevel(str_c(Pred_TD, " km"), c("1 km", "2 km")))
 
 qs5 <- quantile(r10_plot_df$SORENSEN_pct, q_range, na.rm=TRUE)
-
 
 p_r10 <- ggplot(
   data = r10_plot_df,
@@ -449,22 +439,14 @@ p_r10 <- ggplot(
     plot.margin = margin(0, 0, 0, 0, unit = "mm")) +
   scale_y_continuous(breaks = scales::breaks_pretty(n=3), limits = qs5)
 
-# ggsave(p_r10,
-#        filename = file.path(Dir.Outputs, "r10_test.pdf"),
-#        width=180, height=100, units="mm")
-
 # ThTr BRMS model
 fname_r10 <- "R10_brms.RData"
 if(file.exists(file.path(Dir.Outputs, fname_r10))){
   load(file.path(Dir.Outputs, fname_r10))
-  # The loaded object from original script is named 'R10_brms', assign to our variable
-  r10_brms <- r10_brms
 }else{
-  r10_brms <- brm(SORENSEN ~ PREDICTORS + Pred_TW + 
-                    Pred_TD * Pred_TT + 
-                    (1|Species)
-                  , 
-                  data = R10_df,
+  r10_brms <- brm(SORENSEN ~ PREDICTORS + 
+                  Pred_TT * Pred_TD + (1|Species), 
+                  data = r10_df,
                   family = "zero_one_inflated_beta",
                   chains = 6, cores = 6, thin = 2, iter = 7e3)
   save(r10_brms, file = file.path(Dir.Outputs, fname_r10))
@@ -643,6 +625,7 @@ ggsave(p_final,
        filename = file.path(Dir.Outputs, "brms_all_combined+r10.pdf"),
        width=180, 
       #  height=180,
+       device = cairo_pdf,
        height=200,
        units="mm")
 
@@ -671,6 +654,7 @@ ggsave(p_final2,
        filename = file.path(Dir.Outputs, "brms_all_combined.pdf"),
        width=180, 
       #  height=180,
+       device = cairo_pdf,
        height=180,
        units="mm")
 
@@ -690,4 +674,5 @@ r10_only <- ggarrange(
 
 ggsave(r10_only, 
        filename = file.path(Dir.Outputs, "R10.pdf"),
+       device = cairo_pdf,
        width=180, height=60, units="mm")

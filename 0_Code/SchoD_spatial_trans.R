@@ -76,13 +76,13 @@ niche_filt <- cont_niche_df %>% ungroup %>%
   mutate(TrainThinDist = fct_relabel(TrainThinDist, ~ gsub("N/A", "0 km", .x)),
          TrainThinTemp = if_else(TrainThinDist == "0 km",
                                  if_else(TrainThinTemp=="N/A",
-                                         fct_relabel(TrainThinTemp, ~ gsub("N/A", "", .x)),
+                                         fct_relabel(TrainThinTemp, ~ gsub("N/A", "NoThin", .x)),
                                          TrainThinTemp),
                                  fct_relabel(TrainThinTemp, ~ gsub("N/A", "spThin", .x))))
 
 h2k_df <- niche_filt %>%
   filter(TrainApproach == "H2k",
-         TrainThinTemp %in% c("","spThin"),
+         TrainThinTemp %in% c("NoThin","spThin"),
          TrainTrim != "Trim")
 
 r10_df <- niche_filt %>%
@@ -110,6 +110,7 @@ niche_plot1 <- ggplot(niche_fin,
     axis.title.y = element_blank(),
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank(),
+    panel.grid.minor = element_blank(),
     strip.background = element_rect(fill = "white"),
     strip.text = element_text(color= "black", margin = margin(0.5,0.5,0,0, unit = "mm")),
     legend.position = "bottom",
@@ -181,7 +182,7 @@ pred_df <- pred_df %>%
          TrainThinDist = fct_relabel(TrainThinDist, ~ gsub("N/A", "0 km", .x)),
          TrainThinTemp = if_else(TrainThinDist == "0 km", 
                                  if_else(TrainThinTemp=="N/A", 
-                                         fct_relabel(TrainThinTemp, ~ gsub("N/A", "", .x)),
+                                         fct_relabel(TrainThinTemp, ~ gsub("N/A", "NoThin", .x)),
                                          TrainThinTemp),
                                  fct_relabel(TrainThinTemp, ~ gsub("N/A", "spThin", .x))))
 
@@ -205,6 +206,7 @@ niche_plot2 <- ggplot(pred_df,
     axis.title.y=element_blank(),
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank(),
+    panel.grid.minor = element_blank(),
     strip.background = element_rect(fill = "white"),
     strip.text = element_text(color= "black", margin = margin(0.4,0,0.4,0, unit = "mm")),
     legend.position = "bottom",
@@ -225,7 +227,7 @@ niche_plot2 <- ggplot(pred_df,
 
 p1_tot <- ggarrange(plotlist = list(
   niche_plot1 + 
-    facet_nested("Predict"+PredsPeriod~TrainApproach+TrainThinDist+TrainThinTemp,
+    facet_nested("Predict"+PredsPeriod~"Train"+TrainApproach+TrainThinDist+TrainThinTemp,
                  nest_line = element_line(color="black", linewidth = .25)) +
     scale_y_continuous(breaks = c(0.7,0.8,0.9)) +
     theme(legend.box.margin = margin(0, 0, 0, 0, unit = "mm"),
@@ -237,7 +239,7 @@ p1_tot <- ggarrange(plotlist = list(
                     legend = "bottom",
                     nrow = 2,
                     ncol=1,
-                    heights = c(2, 1.175),
+                    heights = c(2, 1.15),
                     font.label = list(size=9, face="plain"))
 
 ggsave(plot= p1_tot, filename=paste0("./2_Outputs/0_Model_performance/Ensemble/meanw/", "SPT_trans.pdf"),
