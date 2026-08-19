@@ -158,15 +158,11 @@ plot_pixels <- ggplot(mss_summ,
     legend.spacing.x = unit(2, "mm"),
     legend.spacing.y = unit(0, "mm"),
     panel.spacing = unit(1, "mm"),
+    panel.grid.minor = element_blank(),
     strip.text.y.right = element_blank(),
     plot.margin = margin(0, 0, 0, 0, unit = "mm"))
 
 ggsave(plot= plot_pixels, 
        filename=paste0("./2_Outputs/0_Model_performance/Ensemble/meanw/",
                        "/sel_fin_2sd_filt.pdf"),
-       width=180, height=100, units="mm")
-
-# ggsave(plot= plot_pixels,
-#        filename=paste0("./2_Outputs/0_Model_performance/Ensemble/meanw/",
-#                        "/sel_fin_2sd_filt_diss.pdf"),
-#        width=160, height=100, units="mm")
+       width=180, height=120, units="mm")

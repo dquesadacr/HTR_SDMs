@@ -239,8 +239,8 @@ p1_tot <- ggarrange(plotlist = list(
                     legend = "bottom",
                     nrow = 2,
                     ncol=1,
-                    heights = c(2, 1.15),
+                    heights = c(2, 1.125),
                     font.label = list(size=9, face="plain"))
 
 ggsave(plot= p1_tot, filename=paste0("./2_Outputs/0_Model_performance/Ensemble/meanw/", "SPT_trans.pdf"),
-       width=180, height=100, units="mm")
+       width=180, height=120, units="mm")
