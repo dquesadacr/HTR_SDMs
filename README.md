@@ -6,7 +6,7 @@ This repository contains the source code necessary to reproduce the results of t
 
 The following external resources are publicly available to fully reproduce the results:
 
-- The `spt_sdm.sif` apptainer container ([DOI](https://doi.org/10.5281/zenodo.8352758))
+- The `spt_sdm.sif` apptainer container ([DOI](https://doi.org/10.5281/zenodo.22015135))
   - This container holds all the necessary software and packages to run the code within this repository
 - The `preds.zip` preprocessed predictors file ([DOI](https://doi.org/10.5281/zenodo.8404563))
 
@@ -19,7 +19,7 @@ From the root folder of the project:
 1. We download the container and the predictors (and unzip them):
 
    ```shell
-   wget https://zenodo.org/records/8352758/files/spt_sdm.sif?download=1 -O spt_sdm.sif
+   wget https://zenodo.org/records/22015135/files/spt_sdm.sif?download=1 -O spt_sdm.sif
 
    wget https://zenodo.org/records/8404563/files/predictors.zip?download=1 -O preds.zip
    unzip preds.zip
