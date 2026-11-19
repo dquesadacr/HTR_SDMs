@@ -85,6 +85,14 @@ sppB <- bind_rows(partB, paB)
 ex_spp <- sdm_extract(data = sppB, x = "x", y = "y", env_layer = predsB, filter_na = TRUE)
 
 ## ---- Tier B: the paper's six algorithms + meanw (verbatim grids) ---------------
+ensB_f <- paste0(OUT, "/fitB_ensemble_meanw.rds")
+if (file.exists(ensB_f)) {
+  cat("Tier B fits already on disk - loading, skipping training\n")
+  ensB <- readRDS(ensB_f)
+  ms <- Filter(Negate(is.null), setNames(lapply(list.files(OUT, "^fitB_[.]rds$|^fitB_(max|raf|gam|gbm|glm|net|svm)[.]rds$"), function(f) {
+    o <- NULL; if (f != "fitB_ensemble_meanw.rds") o <- readRDS(paste0(OUT, "/", f)); o
+  }), sub("^fitB_|[.]rds$", "", list.files(OUT, "^fitB_(max|raf|gam|gbm|glm|net|svm)[.]rds$"))))
+} else {
 tmax <- fit_max(data = ex_spp, response = "pr_ab", predictors = nmsB, partition = ".part",
                 thr = "max_sens_spec", clamp = FALSE, classes = "default",
                 pred_type = "cloglog", regmult = 1); gc(FALSE)
@@ -112,6 +120,7 @@ for (nm in names(ms)) saveRDS(ms[[nm]], paste0(OUT, "/fitB_", nm, ".rds"))
 ensB <- fit_ensemble(models = ms, ens_method = "meanw", thr = NULL,
                      thr_model = "max_sens_spec", metric = "SORENSEN")
 saveRDS(ensB, paste0(OUT, "/fitB_ensemble_meanw.rds"))
+}
 sorB <- sorf(ensB)
 cat("CV Sorensen — A:", sorA, "| B:", sorB, "\n")
 
@@ -119,7 +128,9 @@ cat("CV Sorensen — A:", sorA, "| B:", sorB, "\n")
 sa <- sdm_predict(models = ensA, pred = predsA, thr = "max_sens_spec",
                   con_thr = FALSE, predict_area = NULL)[[1]]$meanw$meanw
 # A grid is Germany Zone 4 (metres), B stack is WGS84: project A's extent first
-predsB_sax <- terra::crop(predsB, terra::extend(terra::projectExtent(sa, crs(predsB)), 0.2))
+# (terra >= 1.7 dropped projectExtent; project a vect instead)
+e_sa <- terra::project(terra::vect(terra::ext(sa)), crs(predsB))
+predsB_sax <- terra::crop(predsB, terra::extend(e_sa, 0.2))
 sb_full <- sdm_predict(models = ensB, pred = predsB_sax, thr = "max_sens_spec",
                        con_thr = FALSE, predict_area = NULL)[[1]]$meanw$meanw
 sb <- terra::mask(terra::resample(sb_full, sa, method = "bilinear"), sa)
