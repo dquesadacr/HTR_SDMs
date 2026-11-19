@@ -52,6 +52,7 @@ CBI is threshold-free, so it isolates continuous ranking from the shared-Youden
 penalty that drags B/C in the binary metrics. It sharpens the B verdict
 (Cicerbita 0.89 AUC but 0.44 CBI on the Saxony landscape) and mildly favours the
 ensemble for the well-sampled species (C ≥ A), while C dilutes toward B for
-Cicerbita. Note: flexsdm's `boyce` is a windowed P:E Spearman variant, not the
-published Carrasco-slope CBI; for the manuscript implement the latter and
-cross-check against biomod2.
+Cicerbita. Note: flexsdm's `boyce` is a windowed P:E Spearman variant of the
+continuous Boyce index (Hirzel et al. 2006, after Boyce et al. 2002); for the
+manuscript, implement the published P/E-vs-bin-midpoint form and cross-check
+against biomod2's CBI.
