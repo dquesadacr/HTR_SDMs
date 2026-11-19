@@ -1,7 +1,7 @@
 # poc_nsdm — niche-truncation mitigation PoC (N-SDM-lite)
 
 Stress test behind the niche-truncation reframing: can broad-scale occurrence data
-(GCIF-style, GBIF) mitigate the small-training-window problem shown for the red-list
+(GBIF) mitigate the small-training-window problem shown for the red-list
 species in the HTR_SDMs paper?
 
 Design (3 species: *Arnica montana*, *Cicerbita alpina*, *Meum athamanticum*):
@@ -35,3 +35,23 @@ bioclim predictors — they are tied to the HTR/MI predictor family and the pape
 harder validations (temporal extrapolation), not to training extent per se. Broad
 data is at worst harmless (C), at best insurance invisible at this grain. See
 `AIOS/history/2026-11-18_sdm-paper_reviewer_dossier.md` for the reviewer context.
+
+CBI addendum (2026-11-19, job 3341026, `03b_cbi.R` → `results_cbi_30s.csv`):
+Continuous Boyce Index via `flexsdm:::boyce(pres, contrast, n_bins=101,
+n_width=0.1)` (predictions at test presences vs test pseudo-absences;
+sliding-window P:E ratio, Spearman vs window midpoints). The script recomputes
+the split AUCs and they match `results_30s.csv` to 1e-15 (split identity proven).
+
+| species | CBI_A | CBI_B | CBI_C |
+|---|---|---|---|
+| Arnica montana | 0.965 | 0.847 | **0.977** |
+| Cicerbita alpina | 0.881 | 0.441 | 0.805 |
+| Meum athamanticum | 0.955 | 0.758 | **0.959** |
+
+CBI is threshold-free, so it isolates continuous ranking from the shared-Youden
+penalty that drags B/C in the binary metrics. It sharpens the B verdict
+(Cicerbita 0.89 AUC but 0.44 CBI on the Saxony landscape) and mildly favours the
+ensemble for the well-sampled species (C ≥ A), while C dilutes toward B for
+Cicerbita. Note: flexsdm's `boyce` is a windowed P:E Spearman variant, not the
+published Carrasco-slope CBI; for the manuscript implement the latter and
+cross-check against biomod2.
