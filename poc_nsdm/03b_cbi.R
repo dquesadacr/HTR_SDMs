@@ -1,9 +1,11 @@
 #!/usr/bin/env Rscript
 # 03b_cbi.R — adds Continuous Boyce Index to the stage-1 A/B/C test.
 # Identical to 03_trunc_test.R through all RNG consumption (seed 42), so
-# AUC/TSS/SOR must reproduce results_30s.csv exactly — that equality is the
-# self-check that the split is unchanged. CBI via flexsdm:::boyce(type="cont"),
-# background = TEST pseudo-absences (evaluation PA set).
+# AUC must reproduce results_30s.csv exactly — that equality is the
+# self-check that the split is unchanged. CBI via flexsdm:::boyce(pres, contrast,
+# n_bins=101, n_width=0.1): pres = predictions at TEST presences, contrast =
+# predictions at TEST pseudo-absences; sliding-window presence:contrast frequency
+# ratio, Spearman-correlated against window midpoints (range -1..1).
 suppressMessages({library(terra); library(sf); library(mgcv); library(randomForest)})
 args <- commandArgs(TRUE)
 POC <- args[1]; RDS <- args[2]; GPKG <- args[3]; OUTP <- args[4]
@@ -11,17 +13,19 @@ set.seed(42)
 SP <- c("Arnica montana", "Cicerbita alpina", "Meum athamanticum")
 PRED <- paste0("Bio", c(1, 4, 5, 6, 12, 15))
 bio <- readRDS(RDS)
-cbi_fun <- getFromNamespace("boyce", "flexsdm")
+cbi_fun <- getFromNamespace("boyce", "flexsdm")  # boyce(pres, contrast, n_bins=101, n_width=0.1)
+
+auc <- function(p, y) {  # Mann-Whitney (same as 03_trunc_test.R, for split self-check)
+  r <- rank(c(p[y == 1], p[y == 0])); n1 <- sum(y == 1); n0 <- sum(y == 0)
+  (sum(r[1:n1]) - n1 * (n1 + 1) / 2) / (n1 * n0)
+}
+cbi <- function(p, te) {
+  as.numeric(cbi_fun(pres = p[te$pr_ab == 1], contrast = p[te$pr_ab == 0]))
+}
 
 lf <- st_read(GPKG, quiet = TRUE) |> st_transform(4326)
 lf$sp <- as.character(lf$Art_wiss)
 lf <- lf[!is.na(lf$Jahr) & lf$Jahr >= 1970 & lf$Jahr <= 2000, ]
-
-cbi <- function(p, te) {
-  v <- vect(te, geom = c("lon", "lat")); crs(v) <- crs(bio)
-  pres <- v[te$pr_ab == 1, ]; bg <- v[te$pr_ab == 0, ]
-  cbi_fun(ecm = p[te$pr_ab == 1], pres = pres, background = bg, type = "cont")
-}
 
 fit_pred <- function(tr, te) {
   f <- as.formula(paste("pr_ab ~", paste(PRED, collapse = " + ")))
@@ -66,9 +70,9 @@ for (sp in SP) {
   m <- function(d) { d <- d[, c(PRED, "pr_ab")]; d$pr_ab <- as.integer(d$pr_ab); d }
   a <- fit_pred(m(trA), m(te)); b <- fit_pred(m(trB), m(te))
   C <- (a$test + b$test) / 2
-  vals <- c(CBI_A = as.numeric(cbi(a$test, te)),
-            CBI_B = as.numeric(cbi(b$test, te)),
-            CBI_C = as.numeric(cbi(C, te)))
+  vals <- c(AUC_A = auc(a$test, te$pr_ab), AUC_B = auc(b$test, te$pr_ab),
+            AUC_C = auc(C, te$pr_ab),
+            CBI_A = cbi(a$test, te), CBI_B = cbi(b$test, te), CBI_C = cbi(C, te))
   res[[sp]] <- c(species = sp, n_sax = nsp, n_gbif = nrow(gP), vals)
   cat(sp, "CBI:", paste(sprintf("%.3f", vals), collapse = " / "), "\n"); flush(stdout())
 }
