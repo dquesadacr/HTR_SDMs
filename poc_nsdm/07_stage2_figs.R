@@ -24,7 +24,7 @@ grp <- c("A (local HTR)" = "binary", "B (whole-range WC)" = "binary",
          "C4 (B covariate)" = "binary")
 
 ## ---- fig a: metric panel ----------------------------------------------------
-files <- list.files(paste0(POC), "^stage2_[A-Za-z_]+/stage2_eval_ext.csv$", full.names = TRUE)
+files <- list.files(POC, "stage2_eval_ext[.]csv$", full.names = TRUE, recursive = TRUE)
 stopifnot(length(files) >= 1)
 ev <- files %>% map_dfr(read_csv, show_col_types = FALSE) %>%
   mutate(species = str_replace_all(species, "_", " "),
