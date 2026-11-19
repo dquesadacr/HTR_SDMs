@@ -56,3 +56,32 @@ Cicerbita. Note: flexsdm's `boyce` is a windowed P:E Spearman variant of the
 continuous Boyce index (Hirzel et al. 2006, after Boyce et al. 2002); for the
 manuscript, implement the published P/E-vs-bin-midpoint form and cross-check
 against biomod2's CBI.
+
+## Stage 2 — paper machinery under N-SDM nesting (Guisan strategies 3 + 4)
+
+Tier A = the paper's trained C1_F10 `biovars_H2000_ObsTrim_NoThin` meanw ensembles
+(loaded, not refit). Tier B = GBIF whole-range (Europe minus Saxony box) on WorldClim
+2.1 H2k 30 arcsec, fit with the paper's verbatim six `fit_*/tune_*` grids + meanw,
+10-fold part_random CV, env_const PA (envelope on the 2.5' stack). C3w/C3s = strategy 3
+(Sorensen-weighted / simple mean of tier suitabilities); C4 = strategy 4 (B suitability
+as covariate, A machinery refit). All evaluated on A's own Ext (2001-2015) points at
+max_sens_spec; full panel (7 thresholds x all sdm_eval metrics) in results_stage2/.
+Harness validity: A rows reproduce the paper's stored Ext evaluations exactly
+(verified for all three species).
+
+max_sens_spec (SOR / TSS / AUC / BOYCE / IMAE):
+
+| species (n)        | A_paper | B_broad | C3w   | C3s   | C4    |
+|--------------------|---------|---------|-------|-------|-------|
+| Arnica (1405+1405) | .955/.910/.985/.841/.839 | **.962/.925**/.985/.923/.655 | .957/.913/**.987**/**.965** | .957/.913/.987/.964 | .950/.898/.984/.823/.800 |
+| Cicerbita (33+33)  | **.918/.849**/.955/.865/**.823** | .914/.818/.914/**.915**/.771 | .914/.818/.945/.910 | .906/.818/.945/.910 | .900/.818/**.961**/.881/.794 |
+| Meum (2922+2922)   | **.939/.873/.985**/.983/.821 | .735/.519/.854/.863/.649 | .920/.838/.971/**.993** | .921/.841/.972/**.993** | .934/.861/.980/.975/.776 |
+
+Readings: (1) BOYCE (CBI family) improves over A via the C3 combination in ALL three
+species (biggest: Arnica .841 -> .965) — the whole-range tier repairs the continuous
+suitability surface of the truncated fine-grain model. (2) In the well-sampled Arnica,
+B alone and both combos match or beat A on the binary metrics (SOR/TSS) — a genuine
+N-SDM gain on the paper's own test set. (3) In weak-B Meum, C3 gracefully degrades
+toward A (0.92 vs 0.94 SOR) while still topping BOYCE — robustness argument.
+(4) C4 tops Cicerbita AUC (.961). C3w ~= C3s (CV-Sorensen weights near .5/.5).
+Files: stage2_<sp>/ on HPC (fitB_* rds, suitability_surfaces.rds, perfB CV csv).
