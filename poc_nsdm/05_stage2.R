@@ -128,8 +128,10 @@ cat("CV Sorensen — A:", sorA, "| B:", sorB, "\n")
 sa <- sdm_predict(models = ensA, pred = predsA, thr = "max_sens_spec",
                   con_thr = FALSE, predict_area = NULL)[[1]]$meanw$meanw
 # A grid is Germany Zone 4 (metres), B stack is WGS84: project A's extent first
-# (terra >= 1.7 dropped projectExtent; project a vect instead)
-e_sa <- terra::project(terra::vect(terra::ext(sa)), crs(predsB))
+# (terra >= 1.7 dropped projectExtent; vect(ext()) has no crs -> assign it first)
+e_sa <- terra::vect(terra::ext(sa))
+terra::crs(e_sa) <- terra::crs(sa)
+e_sa <- terra::project(e_sa, crs(predsB))
 predsB_sax <- terra::crop(predsB, terra::extend(e_sa, 0.2))
 sb_full <- sdm_predict(models = ensB, pred = predsB_sax, thr = "max_sens_spec",
                        con_thr = FALSE, predict_area = NULL)[[1]]$meanw$meanw
