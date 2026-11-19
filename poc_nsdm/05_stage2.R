@@ -132,16 +132,21 @@ sa <- sdm_predict(models = ensA, pred = predsA, thr = "max_sens_spec",
 e_sa <- terra::vect(terra::ext(sa))
 terra::crs(e_sa) <- terra::crs(sa)
 e_sa <- terra::project(e_sa, crs(predsB))
-predsB_sax <- terra::crop(predsB, terra::extend(e_sa, 0.2))
+predsB_sax <- terra::crop(predsB, terra::extend(terra::ext(e_sa), 0.2))
 sb_full <- sdm_predict(models = ensB, pred = predsB_sax, thr = "max_sens_spec",
                        con_thr = FALSE, predict_area = NULL)[[1]]$meanw$meanw
+# warp B suitability onto A's grid properly (resample alone keeps B's CRS and
+# then mask/arith complain with silent "[SRS do not match]" warnings)
+sb_full <- terra::project(sb_full, terra::crs(sa), method = "bilinear")
 sb <- terra::mask(terra::resample(sb_full, sa, method = "bilinear"), sa)
 wA <- sorA / (sorA + sorB)
 c3w <- wA * sa + (1 - wA) * sb
 c3s <- (sa + sb) / 2
 
 ## ---- Strategy 4: B suitability as covariate in A's machinery -------------------
-preds4 <- c(predsA, terra::set.names(sb, "biovarB"))
+sb_b <- sb; names(sb_b) <- "biovarB"          # set.names() misbehaves in this terra
+preds4 <- c(predsA, sb_b)
+stopifnot(nlyr(preds4) == nlyr(predsA) + 1)   # never stack silently short
 nms4 <- names(preds4)
 exA <- sdm_extract(data = occA$Train, x = "x", y = "y", env_layer = preds4, filter_na = TRUE)
 s4max <- fit_max(data = exA, response = "pr_ab", predictors = nms4, partition = ".part",
