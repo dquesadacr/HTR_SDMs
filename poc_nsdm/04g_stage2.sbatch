@@ -1,7 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=stage2
 #SBATCH --partition=standard
-#SBATCH --qos=medium
+#SBATCH --qos=short
+#SBATCH --time=03:30:00
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=4
 #SBATCH --output=slurm-%j.out

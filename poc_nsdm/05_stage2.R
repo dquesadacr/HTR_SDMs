@@ -118,7 +118,8 @@ cat("CV Sorensen — A:", sorA, "| B:", sorB, "\n")
 ## ---- Predict both tiers over the Saxon grid -----------------------------------
 sa <- sdm_predict(models = ensA, pred = predsA, thr = "max_sens_spec",
                   con_thr = FALSE, predict_area = NULL)[[1]]$meanw$meanw
-predsB_sax <- terra::crop(predsB, terra::extend(sa, 0.2))          # Saxony only, cheap
+# A grid is Germany Zone 4 (metres), B stack is WGS84: project A's extent first
+predsB_sax <- terra::crop(predsB, terra::extend(terra::projectExtent(sa, crs(predsB)), 0.2))
 sb_full <- sdm_predict(models = ensB, pred = predsB_sax, thr = "max_sens_spec",
                        con_thr = FALSE, predict_area = NULL)[[1]]$meanw$meanw
 sb <- terra::mask(terra::resample(sb_full, sa, method = "bilinear"), sa)
